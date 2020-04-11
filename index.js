@@ -31,7 +31,7 @@ function MiAirPurifier3(log, config) {
 	this.temperature = undefined;
 	this.humidity = undefined;
 	this.aqi = undefined;
-	
+
 	//Korea PM 2.5 standard value
 	this.levels = [
 		[76, Characteristic.AirQuality.POOR],
@@ -196,12 +196,23 @@ MiAirPurifier3.prototype = {
 					// 	'speed_read'   : [10,  9], // motor1-speed : 0-3000 : 0-3000 1
 					// 	'aqi_heartbeat': [13,  9]  // aqi-updata-heartbeat: 0 - 65534
 
+					// Listen to mode change event
+					device.on('modeChanged', mode => {
+						logger.debug('mode changed to ' + (mode == 0 ? 'auto' : 'favorite'));
+						that.updateTargetAirPurifierState(mode);
+					});
+
+					// Listen to power change event
+					device.on('powerChanged', power => {
+						logger.debug('power changed to ' + (power ? 'on' : 'off'));
+						that.updateActiveState();
+						that.updateCurrentAirPurifierState();
+					});
 
 					// Listen to air quality change event
 					if (that.showAirQuality) {
 						device.on('pm2.5Changed', value => {
 							logger.debug('pm2.5 changed to ' + value);
-
 							that.updateAirQuality(value);
 						});
 					}
@@ -274,6 +285,21 @@ MiAirPurifier3.prototype = {
 			});
 	},
 
+	updateActiveState: async function () {
+
+		await this.device.call("get_properties", [{ "did": this.did, "siid": 2, "piid": 2 }])
+			.then(result => {
+				const isOn = result[0]['value'];
+				logger.debug('updateActiveState: %s', isOn ? 'ON' : 'OFF');
+
+				if (isOn) {
+					this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
+				} else {
+					this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.INACTIVE);
+				}
+			});
+	},
+
 	setActiveState: function (state, callback) {
 		if (!this.device) {
 			callback(new Error('No Air Purifier is discovered.'));
@@ -282,25 +308,23 @@ MiAirPurifier3.prototype = {
 
 		logger.debug('setActiveState: %s', state == Characteristic.Active.ACTIVE ? 'ON' : 'OFF');
 
+		if (state == Characteristic.Active.ACTIVE) {
+			this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
+			this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
+		}
+		else {
+			this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.INACTIVE);
+			this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.INACTIVE);
+		}
+
 		this.device.changePower(state)
 			.then(isOn => {
-
-				if (state == Characteristic.Active.ACTIVE) {
-					this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
-					this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
-					this.service.getCharacteristic(Characteristic.TargetAirPurifierState).updateValue(Characteristic.TargetAirPurifierState.AUTO);
-
-				}
-				else {
-					this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.INACTIVE);
-					this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.INACTIVE);
-				}
-
 				callback(null);
 			})
 			.catch(error => {
 				callback(error);
 			});
+  
 	},
 
 	getCurrentAirPurifierState: function (callback) {
@@ -330,6 +354,21 @@ MiAirPurifier3.prototype = {
 			})
 			.catch(error => {
 				callback(error);
+			});
+	},
+
+	updateCurrentAirPurifierState: async function () {
+
+		await this.device.call("get_properties", [{ "did": this.did, "siid": 2, "piid": 2 }])
+			.then(result => {
+				const isOn = result[0]['value'];
+				logger.debug('updateCurrentAirPurifierState: %s', isOn ? 'ON' : 'OFF');
+
+				if (isOn) {
+					this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
+				} else {
+					this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.INACTIVE);
+				}
 			});
 	},
 
@@ -363,6 +402,22 @@ MiAirPurifier3.prototype = {
 			});
 	},
 
+	updateTargetAirPurifierState: function (mode) {
+		this.mode = mode;
+		// HomeKit
+		// AUTO = 1
+		// MANUAL = 0
+
+		// Miio 
+		// auto = 0
+		// favorite = 2
+		const state = (mode == 0) ? Characteristic.TargetAirPurifierState.AUTO : Characteristic.TargetAirPurifierState.MANUAL;
+
+		logger.debug('updateTargetAirPurifierState: ' + (mode == 0 ? 'AUTO' : 'MANUAL'));
+
+		this.service.getCharacteristic(Characteristic.TargetAirPurifierState).updateValue(state);
+	},
+
 	setTargetAirPurifierState: function (state, callback) {
 		if (!this.device) {
 			callback(new Error('No Air Purifier is discovered.'));
@@ -370,6 +425,9 @@ MiAirPurifier3.prototype = {
 		}
 
 		logger.debug('setTargetAirPurifierState: %s', state == Characteristic.TargetAirPurifierState.AUTO ? 'AUTO' : 'MANUAL');
+
+		this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
+		this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
 
 		const mode = (state == Characteristic.TargetAirPurifierState.AUTO) ? 'auto' : 'favorite';
 
@@ -382,10 +440,6 @@ MiAirPurifier3.prototype = {
 				// Miio
 				// auto = 0
 				// favorite = 2
-
-				this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
-				this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
-
 				this.device.call("get_properties", [{ "did": this.did, "siid": 10, "piid": 10 }]).then(result => {
 					const favorite_level = parseInt(result[0]['value']);
 
@@ -399,8 +453,6 @@ MiAirPurifier3.prototype = {
 				}).catch(error => {
 					callback(error);
 				});
-
-
 			})
 			.catch(error => {
 				callback(error);
@@ -683,7 +735,6 @@ MiAirPurifier3.prototype = {
 				callback(null);
 			})
 			.catch(error => {
-				logger.debug('setBuzzer:' + error);
 				callback(error);
 			});
 	},
