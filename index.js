@@ -21,6 +21,7 @@ function MiAirPurifier3(log, config) {
 	this.ip = config.ip;
 	this.token = config.token;
 	this.did = config.did;
+	this.enablePurifier = config.enablePurifier || true;
 	this.showAirQuality = config.showAirQuality || false;
 	this.showTemperature = config.showTemperature || false;
 	this.showHumidity = config.showHumidity || false;
@@ -49,110 +50,112 @@ function MiAirPurifier3(log, config) {
 		throw new Error('Your must provide token of the Air Purifier.');
 	}
 
-	this.service = new Service.AirPurifier(this.name);
-	this.service.addOptionalCharacteristic(Characteristic.FilterLifeLevel);
-	this.service.addOptionalCharacteristic(Characteristic.FilterChangeIndication);
+	if (this.enablePurifier) {
+		this.service = new Service.AirPurifier(this.name);
+		this.service.addOptionalCharacteristic(Characteristic.FilterLifeLevel);
+		this.service.addOptionalCharacteristic(Characteristic.FilterChangeIndication);
 
-	this.service
-		.getCharacteristic(Characteristic.Active)
-		.on('get', this.getActiveState.bind(this))
-		.on('set', this.setActiveState.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.Active)
+			.on('get', this.getActiveState.bind(this))
+			.on('set', this.setActiveState.bind(this));
 
-	this.service
-		.getCharacteristic(Characteristic.CurrentAirPurifierState)
-		.on('get', this.getCurrentAirPurifierState.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.CurrentAirPurifierState)
+			.on('get', this.getCurrentAirPurifierState.bind(this));
 
-	this.service
-		.getCharacteristic(Characteristic.TargetAirPurifierState)
-		.on('get', this.getTargetAirPurifierState.bind(this))
-		.on('set', this.setTargetAirPurifierState.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.TargetAirPurifierState)
+			.on('get', this.getTargetAirPurifierState.bind(this))
+			.on('set', this.setTargetAirPurifierState.bind(this));
 
-	this.service
-		.getCharacteristic(Characteristic.LockPhysicalControls)
-		.on('get', this.getLockPhysicalControls.bind(this))
-		.on('set', this.setLockPhysicalControls.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.LockPhysicalControls)
+			.on('get', this.getLockPhysicalControls.bind(this))
+			.on('set', this.setLockPhysicalControls.bind(this));
 
-	this.service
-		.getCharacteristic(Characteristic.RotationSpeed)
-		.on('get', this.getRotationSpeed.bind(this))
-		.on('set', this.setRotationSpeed.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.RotationSpeed)
+			.on('get', this.getRotationSpeed.bind(this))
+			.on('set', this.setRotationSpeed.bind(this));
 
-	this.service
-		.getCharacteristic(Characteristic.FilterLifeLevel)
-		.on('get', this.getFilterState.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.FilterLifeLevel)
+			.on('get', this.getFilterState.bind(this));
 
-	this.service
-		.getCharacteristic(Characteristic.FilterChangeIndication)
-		.on('get', this.getFilterChangeState.bind(this));
+		this.service
+			.getCharacteristic(Characteristic.FilterChangeIndication)
+			.on('get', this.getFilterChangeState.bind(this));
 
-	this.serviceInfo = new Service.AccessoryInformation();
+		this.serviceInfo = new Service.AccessoryInformation();
 
-	this.serviceInfo
-		.setCharacteristic(Characteristic.Manufacturer, 'Xiaomi')
-		.setCharacteristic(Characteristic.Model, 'Air Purifier 3')
-		.setCharacteristic(Characteristic.SerialNumber, this.token.toUpperCase())
-		.setCharacteristic(Characteristic.FirmwareRevision, version);
+		this.serviceInfo
+			.setCharacteristic(Characteristic.Manufacturer, 'Xiaomi')
+			.setCharacteristic(Characteristic.Model, 'Air Purifier 3')
+			.setCharacteristic(Characteristic.SerialNumber, this.token.toUpperCase())
+			.setCharacteristic(Characteristic.FirmwareRevision, version);
 
-	this.services.push(this.service);
-	this.services.push(this.serviceInfo);
+		this.services.push(this.service);
+		this.services.push(this.serviceInfo);
 
-	if (this.showAirQuality) {
-		this.airQualitySensorService = new Service.AirQualitySensor(this.name + ' Air Quality');
+		if (this.showAirQuality) {
+			this.airQualitySensorService = new Service.AirQualitySensor(this.name + ' Air Quality');
 
-		this.airQualitySensorService
-			.getCharacteristic(Characteristic.AirQuality)
-			.on('get', this.getAirQuality.bind(this));
+			this.airQualitySensorService
+				.getCharacteristic(Characteristic.AirQuality)
+				.on('get', this.getAirQuality.bind(this));
 
-		this.airQualitySensorService
-			.getCharacteristic(Characteristic.PM2_5Density)
-			.on('get', this.getPM25.bind(this));
+			this.airQualitySensorService
+				.getCharacteristic(Characteristic.PM2_5Density)
+				.on('get', this.getPM25.bind(this));
 
-		this.services.push(this.airQualitySensorService);
+			this.services.push(this.airQualitySensorService);
+		}
+
+		if (this.showTemperature) {
+			this.temperatureSensorService = new Service.TemperatureSensor(this.name + ' Temperature');
+
+			this.temperatureSensorService
+				.getCharacteristic(Characteristic.CurrentTemperature)
+				.on('get', this.getTemperature.bind(this));
+
+			this.services.push(this.temperatureSensorService);
+		}
+
+		if (this.showHumidity) {
+			this.humiditySensorService = new Service.HumiditySensor(this.name + ' Humidity');
+
+			this.humiditySensorService
+				.getCharacteristic(Characteristic.CurrentRelativeHumidity)
+				.on('get', this.getHumidity.bind(this));
+
+			this.services.push(this.humiditySensorService);
+		}
+
+		if (this.enableLED) {
+			this.lightBulbService = new Service.Lightbulb(this.name + ' LED');
+
+			this.lightBulbService
+				.getCharacteristic(Characteristic.On)
+				.on('get', this.getLED.bind(this))
+				.on('set', this.setLED.bind(this));
+
+			this.services.push(this.lightBulbService);
+		}
+
+		if (this.enableBuzzer) {
+			this.switchService = new Service.Switch(this.name + ' Buzzer');
+
+			this.switchService
+				.getCharacteristic(Characteristic.On)
+				.on('get', this.getBuzzer.bind(this))
+				.on('set', this.setBuzzer.bind(this));
+
+			this.services.push(this.switchService);
+		}
+
+		this.discover();
 	}
-
-	if (this.showTemperature) {
-		this.temperatureSensorService = new Service.TemperatureSensor(this.name + ' Temperature');
-
-		this.temperatureSensorService
-			.getCharacteristic(Characteristic.CurrentTemperature)
-			.on('get', this.getTemperature.bind(this));
-
-		this.services.push(this.temperatureSensorService);
-	}
-
-	if (this.showHumidity) {
-		this.humiditySensorService = new Service.HumiditySensor(this.name + ' Humidity');
-
-		this.humiditySensorService
-			.getCharacteristic(Characteristic.CurrentRelativeHumidity)
-			.on('get', this.getHumidity.bind(this));
-
-		this.services.push(this.humiditySensorService);
-	}
-
-	if (this.enableLED) {
-		this.lightBulbService = new Service.Lightbulb(this.name + ' LED');
-
-		this.lightBulbService
-			.getCharacteristic(Characteristic.On)
-			.on('get', this.getLED.bind(this))
-			.on('set', this.setLED.bind(this));
-
-		this.services.push(this.lightBulbService);
-	}
-
-	if (this.enableBuzzer) {
-		this.switchService = new Service.Switch(this.name + ' Buzzer');
-
-		this.switchService
-			.getCharacteristic(Characteristic.On)
-			.on('get', this.getBuzzer.bind(this))
-			.on('set', this.setBuzzer.bind(this));
-
-		this.services.push(this.switchService);
-	}
-
-	this.discover();
 }
 
 MiAirPurifier3.prototype = {
@@ -174,14 +177,14 @@ MiAirPurifier3.prototype = {
 				if (device.matches('type:air-purifier')) {
 					that.device = device;
 
-					logger.debug('Discovered Mi Air Purifier (%s) at %s', device.miioModel, that.ip);
-					logger.debug('Model       : ' + device.miioModel);
-					logger.debug('Power       : ' + device.property('power')['value']);
-					logger.debug('Mode        : ' + device.property('mode')['value']);
-					logger.debug('Temperature : ' + device.property('temperature')['value']);
-					logger.debug('Humidity    : ' + device.property('humidity')['value']);
-					logger.debug('Air Quality : ' + device.property('aqi')['value']);
-					logger.debug('LED         : ' + device.property('led_brightness')['value']);
+					logger.info('Discovered Mi Air Purifier (%s) at %s', device.miioModel, that.ip);
+					logger.info('Model       : ' + device.miioModel);
+					logger.info('Power       : ' + device.property('power')['value']);
+					logger.info('Mode        : ' + device.property('mode')['value']);
+					logger.info('Temperature : ' + device.property('temperature')['value']);
+					logger.info('Humidity    : ' + device.property('humidity')['value']);
+					logger.info('Air Quality : ' + device.property('aqi')['value']);
+					logger.info('LED         : ' + device.property('led_brightness')['value']);
 
 
 					// 	'power'        : [ 2,  2], // 
@@ -198,13 +201,13 @@ MiAirPurifier3.prototype = {
 
 					// Listen to mode change event
 					device.on('modeChanged', mode => {
-						logger.debug('mode changed to ' + (mode == 0 ? 'auto' : 'favorite'));
+						logger.info('mode changed to ' + (mode == 0 ? 'auto' : 'favorite'));
 						that.updateTargetAirPurifierState(mode);
 					});
 
 					// Listen to power change event
 					device.on('powerChanged', power => {
-						logger.debug('power changed to ' + (power ? 'on' : 'off'));
+						logger.info('power changed to ' + (power ? 'on' : 'off'));
 						that.updateActiveState();
 						that.updateCurrentAirPurifierState();
 					});
@@ -212,7 +215,7 @@ MiAirPurifier3.prototype = {
 					// Listen to air quality change event
 					if (that.showAirQuality) {
 						device.on('pm2.5Changed', value => {
-							logger.debug('pm2.5 changed to ' + value);
+							logger.info('pm2.5 changed to ' + value);
 							that.updateAirQuality(value);
 						});
 					}
@@ -225,10 +228,10 @@ MiAirPurifier3.prototype = {
 								that.updateTemperature(temperature.celsius);
 							})
 							.catch(error => {
-								logger.debug(error);
+								logger.info(error);
 							});
 						device.on('temperatureChanged', temperature => {
-							logger.debug('temperature changed to ' + temperature.celsius);
+							logger.info('temperature changed to ' + temperature.celsius);
 							that.updateTemperature(temperature.celsius);
 						});
 					}
@@ -241,20 +244,20 @@ MiAirPurifier3.prototype = {
 								that.updateHumidity(result);
 							})
 							.catch(error => {
-								logger.debug(error);
+								logger.info(error);
 							});
 						device.on('relativeHumidityChanged', value => {
-							logger.debug('relative humidity changed to ' + value);
+							logger.info('relative humidity changed to ' + value);
 							that.updateHumidity(value);
 						});
 					}
 				} else {
-					logger.debug('Device discovered at %s is not Mi Air Purifier', this.ip);
+					logger.info('Device discovered at %s is not Mi Air Purifier', this.ip);
 				}
 			})
 			.catch(error => {
-				logger.debug('Failed to discover Mi Air Purifier at %s', this.ip);
-				logger.debug('Will retry after 30 seconds');
+				logger.info('Failed to discover Mi Air Purifier at %s', this.ip);
+				logger.info('Will retry after 30 seconds');
 
 				setTimeout(function () {
 					that.discover();
@@ -271,7 +274,7 @@ MiAirPurifier3.prototype = {
 		this.device.call("get_properties", [{ "did": this.did, "siid": 2, "piid": 2 }])
 			.then(result => {
 				const isOn = result[0]['value'];
-				logger.debug('getActiveState: %s', isOn ? 'ON' : 'OFF');
+				logger.info('getActiveState: %s', isOn ? 'ON' : 'OFF');
 
 				if (isOn) {
 					callback(null, Characteristic.Active.ACTIVE);
@@ -290,7 +293,7 @@ MiAirPurifier3.prototype = {
 		await this.device.call("get_properties", [{ "did": this.did, "siid": 2, "piid": 2 }])
 			.then(result => {
 				const isOn = result[0]['value'];
-				logger.debug('updateActiveState: %s', isOn ? 'ON' : 'OFF');
+				logger.info('updateActiveState: %s', isOn ? 'ON' : 'OFF');
 
 				if (isOn) {
 					this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
@@ -306,7 +309,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('setActiveState: %s', state == Characteristic.Active.ACTIVE ? 'ON' : 'OFF');
+		logger.info('setActiveState: %s', state == Characteristic.Active.ACTIVE ? 'ON' : 'OFF');
 
 		if (state == Characteristic.Active.ACTIVE) {
 			this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
@@ -324,7 +327,7 @@ MiAirPurifier3.prototype = {
 			.catch(error => {
 				callback(error);
 			});
-  
+
 	},
 
 	getCurrentAirPurifierState: function (callback) {
@@ -344,7 +347,7 @@ MiAirPurifier3.prototype = {
 				// On = true
 				// Off = false
 				const isOn = result[0]['value'];
-				logger.debug('getCurrentAirPurifierState: %s', isOn ? 'PURIFYING_AIR' : 'INACTIVE');
+				logger.info('getCurrentAirPurifierState: %s', isOn ? 'PURIFYING_AIR' : 'INACTIVE');
 
 				if (isOn) {
 					callback(null, Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
@@ -362,7 +365,7 @@ MiAirPurifier3.prototype = {
 		await this.device.call("get_properties", [{ "did": this.did, "siid": 2, "piid": 2 }])
 			.then(result => {
 				const isOn = result[0]['value'];
-				logger.debug('updateCurrentAirPurifierState: %s', isOn ? 'ON' : 'OFF');
+				logger.info('updateCurrentAirPurifierState: %s', isOn ? 'ON' : 'OFF');
 
 				if (isOn) {
 					this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
@@ -389,7 +392,7 @@ MiAirPurifier3.prototype = {
 				// favorite = 2
 				const mode = result[0]['value'];
 
-				logger.debug('getTargetAirPurifierState: ' + (mode == 0 ? 'AUTO' : 'MANUAL'));
+				logger.info('getTargetAirPurifierState: ' + (mode == 0 ? 'AUTO' : 'MANUAL'));
 
 				if (mode == 0) {
 					callback(null, Characteristic.TargetAirPurifierState.AUTO);
@@ -413,7 +416,7 @@ MiAirPurifier3.prototype = {
 		// favorite = 2
 		const state = (mode == 0) ? Characteristic.TargetAirPurifierState.AUTO : Characteristic.TargetAirPurifierState.MANUAL;
 
-		logger.debug('updateTargetAirPurifierState: ' + (mode == 0 ? 'AUTO' : 'MANUAL'));
+		logger.info('updateTargetAirPurifierState: ' + (mode == 0 ? 'AUTO' : 'MANUAL'));
 
 		this.service.getCharacteristic(Characteristic.TargetAirPurifierState).updateValue(state);
 	},
@@ -424,7 +427,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('setTargetAirPurifierState: %s', state == Characteristic.TargetAirPurifierState.AUTO ? 'AUTO' : 'MANUAL');
+		logger.info('setTargetAirPurifierState: %s', state == Characteristic.TargetAirPurifierState.AUTO ? 'AUTO' : 'MANUAL');
 
 		this.service.getCharacteristic(Characteristic.CurrentAirPurifierState).updateValue(Characteristic.CurrentAirPurifierState.PURIFYING_AIR);
 		this.service.getCharacteristic(Characteristic.Active).updateValue(Characteristic.Active.ACTIVE);
@@ -445,7 +448,7 @@ MiAirPurifier3.prototype = {
 
 					const rotationSpeed = (favorite_level / 14) * 100;
 
-					logger.debug('getRotationSpeed: ' + rotationSpeed + ' favorite_level: ' + favorite_level);
+					logger.info('getRotationSpeed: ' + rotationSpeed + ' favorite_level: ' + favorite_level);
 
 					this.service.getCharacteristic(Characteristic.RotationSpeed).updateValue(rotationSpeed);
 
@@ -470,7 +473,7 @@ MiAirPurifier3.prototype = {
 
 			const rotationSpeed = (favorite_level / 14) * 100;
 
-			logger.debug('getRotationSpeed: ' + rotationSpeed + ' favorite_level: ' + favorite_level);
+			logger.info('getRotationSpeed: ' + rotationSpeed + ' favorite_level: ' + favorite_level);
 
 			callback(null, rotationSpeed);
 		}).catch(error => {
@@ -488,7 +491,7 @@ MiAirPurifier3.prototype = {
 
 			const favorite_level = (speed / 100) * 14;
 
-			logger.debug('setRotationSpeed: ' + speed + ' favorite_level: ' + favorite_level);
+			logger.info('setRotationSpeed: ' + speed + ' favorite_level: ' + favorite_level);
 
 			this.device.call("set_properties", [{ "did": this.did, "siid": 10, "piid": 10, "value": favorite_level }])
 				.then()
@@ -511,7 +514,7 @@ MiAirPurifier3.prototype = {
 				const child_lock = result[0]['value'];
 				const state = child_lock ? Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED : Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED;
 
-				logger.debug('getLockPhysicalControls: %s', state ? 'CONTROL_LOCK_ENABLED' : 'CONTROL_LOCK_DISABLED');
+				logger.info('getLockPhysicalControls: %s', state ? 'CONTROL_LOCK_ENABLED' : 'CONTROL_LOCK_DISABLED');
 
 				callback(null, state);
 			})
@@ -527,7 +530,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('setLockPhysicalControls: %s', state ? 'CONTROL_LOCK_ENABLED' : 'CONTROL_LOCK_DISABLED');
+		logger.info('setLockPhysicalControls: %s', state ? 'CONTROL_LOCK_ENABLED' : 'CONTROL_LOCK_DISABLED');
 
 		await this.device.changeChildLock(state)
 			.then(result => {
@@ -570,7 +573,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('getAirQuality: %s', this.aqi);
+		logger.info('getAirQuality: %s', this.aqi);
 
 		for (var item of this.levels) {
 			if (this.aqi >= item[0]) {
@@ -587,7 +590,7 @@ MiAirPurifier3.prototype = {
 
 		this.aqi = value;
 
-		logger.debug('updateAirQuality: %s', value);
+		logger.info('updateAirQuality: %s', value);
 
 		this.updatePM25(value);
 
@@ -605,7 +608,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('getPM25: %s', this.aqi);
+		logger.info('getPM25: %s', this.aqi);
 
 		callback(null, this.aqi);
 	},
@@ -616,7 +619,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('updatePM25: %s', value);
+		logger.info('updatePM25: %s', value);
 
 		this.airQualitySensorService.getCharacteristic(Characteristic.PM2_5Density).updateValue(value);
 	},
@@ -627,7 +630,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('getTemperature: %s', this.temperature);
+		logger.info('getTemperature: %s', this.temperature);
 
 		callback(null, this.temperature);
 	},
@@ -639,7 +642,7 @@ MiAirPurifier3.prototype = {
 
 		this.temperature = value;
 
-		logger.debug('updateTemperature: %s', value);
+		logger.info('updateTemperature: %s', value);
 
 		this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(value);
 	},
@@ -650,7 +653,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('getHumidity: %s', this.humidity);
+		logger.info('getHumidity: %s', this.humidity);
 
 		callback(null, this.humidity);
 	},
@@ -662,7 +665,7 @@ MiAirPurifier3.prototype = {
 
 		this.humidity = value;
 
-		logger.debug('updateHumidity: %s', value);
+		logger.info('updateHumidity: %s', value);
 
 		this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(value);
 	},
@@ -680,7 +683,7 @@ MiAirPurifier3.prototype = {
 		const result = await this.device.call("get_properties", [{ "did": this.did, "siid": 6, "piid": 1 }]).catch(error => { callback(error); });
 
 		const isOn = result[0]['value'] == 2 ? false : true;
-		logger.debug('getLED: %s', isOn ? "ON" : "OFF");
+		logger.info('getLED: %s', isOn ? "ON" : "OFF");
 
 		callback(null, isOn);
 	},
@@ -695,7 +698,7 @@ MiAirPurifier3.prototype = {
 		// dim = 1
 		// off = 2
 
-		logger.debug('setLED: %s', state ? 'ON' : 'OFF');
+		logger.info('setLED: %s', state ? 'ON' : 'OFF');
 
 		const brightness = state ? 'bright' : 'off';
 
@@ -717,7 +720,7 @@ MiAirPurifier3.prototype = {
 		const result = await this.device.call("get_properties", [{ "did": this.did, "siid": 5, "piid": 1 }]).catch(error => { callback(error); });
 		const buzzer = result[0]['value']
 
-		logger.debug('getBuzzer: %s', buzzer ? 'ON' : 'OFF');
+		logger.info('getBuzzer: %s', buzzer ? 'ON' : 'OFF');
 
 		callback(null, buzzer);
 	},
@@ -728,7 +731,7 @@ MiAirPurifier3.prototype = {
 			return;
 		}
 
-		logger.debug('setBuzzer: %s', state ? 'ON' : 'OFF');
+		logger.info('setBuzzer: %s', state ? 'ON' : 'OFF');
 
 		await this.device.changeBuzzer(state)
 			.then(state => {

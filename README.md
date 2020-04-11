@@ -78,7 +78,8 @@
 				"showHumidity": true,
 				"showAirQuality": true,
 				"enableLED": true,
-				"enableBuzzer": true
+				"enableBuzzer": true,
+				"enablePurifier": true
 			},
 			{
 				"accessory": "MiAirPurifier3",
@@ -90,12 +91,13 @@
 				"showHumidity": true,
 				"showAirQuality": true,
 				"enableLED": true,
-				"enableBuzzer": true
+				"enableBuzzer": true,
+				"enablePurifier": true
 			}
 		]
 	```
 
-	**Notes:** Set value for `showTemperature`, `showHumidity`, `showAirQuality`, `enableLED`, `enableBuzzer` to **true** or **false** to show or hide these sensors in Home app.
+	**Notes:** Set value for `showTemperature`, `showHumidity`, `showAirQuality`, `enableLED`, `enableBuzzer`, `enablePurifier`  to **true** or **false** to show or hide these sensors in Home app.
 
 8. Restart Homebridge, and your Mi air purifier will be added to Home app.
 
