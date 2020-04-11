@@ -8,7 +8,7 @@
 
 	"accessories": [
 		{
-			"accessory": "MiAirPurifier3",			
+			"accessory": "MiAirPurifier3",
 			"name": "Air Purifier",
 			"ip": "192.168.1.8",
 			"did": "424234334",
@@ -17,8 +17,7 @@
 			"showHumidity": true,
 			"showAirQuality": true,
 			"enableLED": true,
-			"enableBuzzer": true,
-			"enablePurifier" : true
+			"enableBuzzer": true
 		}
 	]
 }
