@@ -324,7 +324,7 @@ MiAirPurifier3.prototype = {
 			.catch(error => {
 				callback(error);
 			});
-  
+
 	},
 
 	getCurrentAirPurifierState: function (callback) {
@@ -491,13 +491,16 @@ MiAirPurifier3.prototype = {
 			logger.debug('setRotationSpeed: ' + speed + ' favorite_level: ' + favorite_level);
 
 			this.device.call("set_properties", [{ "did": this.did, "siid": 10, "piid": 10, "value": favorite_level }])
-				.then()
+				.then(result=>{
+					callback(null);
+				})
 				.catch(err => {
 					callback(err);
 				});
 		}
-
-		callback(null);
+		else {
+			callback(null);
+		}
 	},
 
 	getLockPhysicalControls: async function (callback) {
@@ -516,7 +519,6 @@ MiAirPurifier3.prototype = {
 				callback(null, state);
 			})
 			.catch(error => {
-
 				callback(error);
 			});
 	},
