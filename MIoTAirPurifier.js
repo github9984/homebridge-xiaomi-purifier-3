@@ -5,8 +5,7 @@ class MIoTAirPurifier extends MIoTDevice {
         super(did, token, ip);
 
         this.dictionary = {
-            'power'          : [ 2,  2], // 
-            'fan'            : [ 2,  4], // Fan Level : 1(Level 1), 2(Level 2), 3(Level 3)
+            'power'          : [ 2,  2], // bool            
             'mode'           : [ 2,  5], // Mode : 0(Auto), 1(Sleep), 2(Favorite), 3(None)
             'aqi'            : [ 3,  6], // PM2.5 Density : 0-600 1
             'humidity'       : [ 3,  7], // Relative Humidity: 0-100(Percentage)
@@ -15,9 +14,9 @@ class MIoTAirPurifier extends MIoTDevice {
             'child_lock'     : [ 7,  1], // Physical Control Locked : bool
             'led_brightness' : [ 6,  1], // 0 (bright), 1 (dim), 2 (off)            
             'buzzer'         : [ 5,  1], // bool
-            'motor_speed'    : [10,  8], // motor1-speed : 0-3000 : 0-3000 1
-
-            // 'speed_read'   : [10,  9], // motor1-speed : 0-3000 : 0-3000 1
+            'speed_write'    : [10,  8], // motor1-speed : 0-3000 : 0-3000 1
+            'speed_read'     : [10,  9], // motor1-speed : 0-3000 : 0-3000 1
+ 
             // 'aqi_heartbeat': [13,  9]  // aqi-updata-heartbeat: 0 - 65534
         }
 
@@ -55,14 +54,14 @@ class MIoTAirPurifier extends MIoTDevice {
     }
 
     getSpeed() {
-        var value = this.get('motor_speed');
-        return Math.round(((value-390)/1760) * 100);
+        var motor_speed = this.get('speed_read');
+        return Math.round(((motor_speed-390)/1760) * 100);
     }
 
-     setSpeed(speed) {
-         var targetValue = Math.round(speed/100 * 1760) + 390;
-         this.set('motor_speed', targetValue);
-     }
+    setSpeed(speed) {
+        var motor_speed = Math.round(speed/100 * 1760) + 390;
+        this.set('speed_write', motor_speed);
+    }
 }
 
 module.exports = MIoTAirPurifier

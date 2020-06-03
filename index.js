@@ -28,7 +28,7 @@ function AirPurifier(log, config) {
     }
 
     this.device = new MIoTDevice(config['did'], config['token'], config['ip']);
-
+ 
     this.device.onChange('power', value => {
         that.updateActive();
         that.updateStatusActive();
@@ -39,7 +39,7 @@ function AirPurifier(log, config) {
         that.updateTargetAirPurifierState();
     });
 
-    this.device.onChange('motor_read', value => {
+    this.device.onChange('speed_read', value => {
         that.updateRotationSpeed();
         that.updateCurrentAirPurifierState();
     });
@@ -202,7 +202,7 @@ AirPurifier.prototype.getActive = function (callback) {
 
     try {
         var value = this.device.get('power');
-
+ 
         if (value == true) {
             return callback(null, Characteristic.Active.ACTIVE);
         } else {
