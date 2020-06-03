@@ -1,6 +1,6 @@
 {
 	"name": "homebridge-xiaomi-purifier-3",
-	"version": "1.5.3",
+	"version": "1.5.4",
 	"description": "Xiaomi Air Purifier 3/3H plugin for Homebridge.",
 	"license": "MIT",
 	"keywords": [
