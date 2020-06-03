@@ -35,10 +35,10 @@
 1. Install required packages.
 
 	```
-	npm install -g homebridge-xiaomi-purifier-3 miio
+	npm install -g homebridge-xiaomi-purifier-3
 	```
 
-2. Make sure your Homebridge server is same network with your air purifier, then run following command to discover the token.
+2. Make sure your Homebridge server is same network with your device, then run following command to discover the token.
 
 	```
 	miio discover --sync
@@ -71,33 +71,20 @@
 			{
 				"accessory": "MiAirPurifier3",
 				"name": "Bed Room Air Purifier",
-				"ip": "ADDRESS_OF_THE_AIR_PURIFIER",
-				"token": "TOKEN_FROM_STEP_3",
-				"did": "xxxxxxxxx",
-				"showTemperature": true,
-				"showHumidity": true,
-				"showAirQuality": true,
+				"ip": "192.168.1.x",
+				"token": "xxxxxxxxxxxxxxxxxxx",
+				"did": "xxxxxxxxx",		
 				"enableLED": true,
-				"enableBuzzer": true
-			},
-			{
-				"accessory": "MiAirPurifier3",
-				"name": "Living Room Air Purifier",
-				"ip": "ADDRESS_OF_THE_AIR_PURIFIER",
-				"token": "TOKEN_FROM_STEP_3",
-				"did": "xxxxxxxxx",
-				"showTemperature": true,
-				"showHumidity": true,
-				"showAirQuality": true,
-				"enableLED": true,
-				"enableBuzzer": true
+				"enableBuzzer": true,
+				"pm25_breakpoints" = [5, 12, 35, 55],
+				"polling_interval": 60000
 			}
 		]
 	```
 
-	**Notes:** Set value for `showTemperature`, `showHumidity`, `showAirQuality`, `enableLED`, `enableBuzzer` to **true** or **false** to show or hide these sensors in Home app.
+	**Notes:** Set value for `enableLED`, `enableBuzzer` to **true** or **false** to show or hide these sensors in Home app.
 
-8. Restart Homebridge, and your Mi air purifier will be added to Home app.
+8. Restart Homebridge, and your device will be added to Home app.
 
 
 
