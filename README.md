@@ -1,14 +1,11 @@
 [![npm version](https://badge.fury.io/js/homebridge-xiaomi-purifier-3.svg)](https://badge.fury.io/js/homebridge-xiaomi-purifier-3)
 
 # homebridge-xiaomi-purifier-3
- 
- 
 
 ![mi-air-purifier](https://cloud.githubusercontent.com/assets/73107/26249685/1d0ae78c-3cda-11e7-8b64-71e8d4323a3e.jpg)
 
-
-
 ### Features
+
 * Switch on / off.
 
 * Switch auto / manual mode.
@@ -29,24 +26,23 @@
 
 * Display filter state.
 
-
-
 ### Installation
+
 1. Install required packages.
 
-	```
+``` 
 	npm install -g homebridge-xiaomi-purifier-3
 	```
 
 2. Make sure your Homebridge server is same network with your device, then run following command to discover the token.
 
-	```
+``` 
 	miio discover --sync
 	```
 
 3. You may need to wait few minutes until you get the response similar to below:
 
-	```
+``` 
 	Device ID: 49466088
 	Model info: Unknown
 	Address: 192.168.1.8
@@ -60,13 +56,13 @@
 
 6. Then run the command again.
 
-	```
+``` 
 	miio discover --sync
 	```
 
-7. Add following accessory to the `config.json`.
+7. Add following accessory to the `config.json` .
 
-	```
+``` 
 		"accessories": [
 			{
 				"accessory": "MiAirPurifier3",
@@ -76,17 +72,16 @@
 				"did": "xxxxxxxxx",		
 				"enableLED": true,
 				"enableBuzzer": true,
-				"pm25_breakpoints" = [5, 12, 35, 55],
+				"pm25_breakpoints": [5, 12, 35, 55],
 				"polling_interval": 60000
 			}
 		]
 	```
 
-	**Notes:** Set value for `enableLED`, `enableBuzzer` to **true** or **false** to show or hide these sensors in Home app.
+	**Notes:** Set value for `enableLED` , `enableBuzzer` to **true** or **false** to show or hide these sensors in Home app.
 
 8. Restart Homebridge, and your device will be added to Home app.
 
-
-
 # License
+
 MIT License
