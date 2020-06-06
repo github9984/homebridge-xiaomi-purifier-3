@@ -1,8 +1,8 @@
-[![npm version](https://badge.fury.io/js/homebridge-xiaomi-purifier-3.svg)](https://badge.fury.io/js/homebridge-xiaomi-purifier-3)
+[![npm version](https://badge.fury.io/js/homebridge-xiaomi-purifier-pro.svg)](https://badge.fury.io/js/homebridge-xiaomi-purifier-pro)
 
-# homebridge-xiaomi-purifier-3
+# homebridge-xiaomi-purifier-pro
 
-![mi-air-purifier](https://cloud.githubusercontent.com/assets/73107/26249685/1d0ae78c-3cda-11e7-8b64-71e8d4323a3e.jpg)
+![mi-air-purifier](https://imgaz.staticbg.com/thumb/large/oaupload/ser1/banggood/images/55/22/4e668990-f7be-4361-8626-06d87f4e4cb7.jpg)
 
 ### Features
 
@@ -31,7 +31,7 @@
 1. Install required packages.
 
 ``` 
-	npm install -g homebridge-xiaomi-purifier-3
+	npm install -g homebridge-xiaomi-purifier-pro
 	```
 
 2. Make sure your Homebridge server is same network with your device, then run following command to discover the token.
@@ -65,15 +65,14 @@
 ``` 
 		"accessories": [
 			{
-				"accessory": "MiAirPurifier3",
+				"accessory": "MiAirPurifierPro",
 				"name": "Bed Room Air Purifier",
 				"ip": "192.168.1.x",
-				"token": "xxxxxxxxxxxxxxxxxxx",
-				"did": "xxxxxxxxx",		
-				"enableLED": true,
-				"enableBuzzer": true,
-				"pm25_breakpoints": [5, 12, 35, 55],
-				"polling_interval": 60000
+				"token": "xxxxxxxxxxxxxxxxxxx",		
+				"enableLED": true (optional),
+				"enableBuzzer": true (optional),
+				"pm25_breakpoints": [5, 12, 35, 55] (optional),
+				"polling_interval": 60000 (optional)
 			}
 		]
 	```
