@@ -69,11 +69,11 @@
 				"name": "Bed Room Air Purifier",
 				"ip": "192.168.1.x",
 				"token": "xxxxxxxxxxxxxxxxxxx",
-				"did": "xxxxxxxxx",		
-				"enableLED": true,
-				"enableBuzzer": true,
-				"pm25_breakpoints": [5, 12, 35, 55],
-				"polling_interval": 60000
+				"did": "xxxxxxxxx",		 
+				"enableLED": true (optional),
+				"enableBuzzer": true (optional),
+				"pm25_breakpoints": [5, 12, 35, 55] (optional),
+				"polling_interval": 60000 (optional) 
 			}
 		]
 	```

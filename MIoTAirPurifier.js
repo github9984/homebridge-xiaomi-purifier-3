@@ -10,13 +10,11 @@ class MIoTAirPurifier extends MIoTDevice {
             'aqi'            : [ 3,  6], // PM2.5 Density : 0-600 1
             'humidity'       : [ 3,  7], // Relative Humidity: 0-100(Percentage)
             'temp'           : [ 3,  8], // Temperature: -40-125 0.1
+            'favorite_level' : [ 10, 3],
             'filter_level'   : [ 4,  3], // Filter Live Level : 0-100(Percentage)
             'child_lock'     : [ 7,  1], // Physical Control Locked : bool
             'led_brightness' : [ 6,  1], // 0 (bright), 1 (dim), 2 (off)            
-            'buzzer'         : [ 5,  1], // bool
-            'speed_write'    : [10,  8], // motor1-speed : 0-3000 : 0-3000 1
-            'speed_read'     : [10,  9], // motor1-speed : 0-3000 : 0-3000 1
- 
+            'buzzer'         : [ 5,  1], // bool           
             // 'aqi_heartbeat': [13,  9]  // aqi-updata-heartbeat: 0 - 65534
         }
 
@@ -52,15 +50,18 @@ class MIoTAirPurifier extends MIoTDevice {
 
         this.onChangeProperty(this.dictionary[propertyName][0], this.dictionary[propertyName][1], callback);
     }
-
+ 
+    
     getSpeed() {
-        var motor_speed = this.get('speed_read');
-        return Math.round(((motor_speed-390)/1760) * 100);
+        var favorite_level = this.get('favorite_level');
+        const rotationSpeed = (favorite_level / 16) * 100;
+
+        return Math.round(rotationSpeed);
     }
 
     setSpeed(speed) {
-        var motor_speed = Math.round(speed/100 * 1760) + 390;
-        this.set('speed_write', motor_speed);
+        const favorite_level = (speed / 100) * 16;
+        this.set('favorite_level', favorite_level);
     }
 }
 

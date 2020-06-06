@@ -18,17 +18,20 @@ function AirPurifier(log, config) {
     this.log = log;
     this.services = [];
     this.did = config['did'];
-    this.enableLED = config['enableLED'];
-    this.enableBuzzer = config['enableBuzzer'];
-    this.polling_interval = config['polling_interval'];
-    this.pm25_breakpoints = [5, 12, 35, 55];
+    this.enableLED = config['enableLED'] || false;
+    this.enableBuzzer = config['enableBuzzer'] || false;
+    this.polling_interval = config['polling_interval'] || 60000;
 
     if (Array.isArray(config['pm25_breakpoints']) && config['pm25_breakpoints'].length >= 4) {
         this.pm25_breakpoints = config['pm25_breakpoints'];
     }
+    else {
+        this.pm25_breakpoints = [5, 12, 35, 55];
+    }
+
 
     this.device = new MIoTDevice(config['did'], config['token'], config['ip']);
- 
+
     this.device.onChange('power', value => {
         that.updateActive();
         that.updateStatusActive();
@@ -39,7 +42,7 @@ function AirPurifier(log, config) {
         that.updateTargetAirPurifierState();
     });
 
-    this.device.onChange('speed_read', value => {
+    this.device.onChange('favorite_level', value => {
         that.updateRotationSpeed();
         that.updateCurrentAirPurifierState();
     });
@@ -202,7 +205,7 @@ AirPurifier.prototype.getActive = function (callback) {
 
     try {
         var value = this.device.get('power');
- 
+
         if (value == true) {
             return callback(null, Characteristic.Active.ACTIVE);
         } else {
@@ -377,14 +380,17 @@ AirPurifier.prototype.setRotationSpeed = function (targetSpeed, callback, contex
     if (context === 'fromOutsideHomekit') { return callback(null) }
 
     try {
-        this.device.setSpeed(targetSpeed);
+        if (targetSpeed > 0) {
+            this.device.setSpeed(targetSpeed);
+        }
 
-        // 0 (auto), 1 (sleep), 2(favorite), 3 (none)
-        if (this.device.get('mode') == 0) {
-            this.device.set('mode', 2);
+
+        if (this.device.get('mode') == 'auto') {
+            this.device.set('mode', 'favorite');
         }
 
         callback(null);
+
     } catch (e) {
         this.log('setRotationSpeed Failed : ' + e);
         callback(e);
@@ -631,7 +637,7 @@ AirPurifier.prototype.updateFilterLifeLevel = function () {
 
     try {
         var value = this.device.get('filter_level');
-        
+
         this.service.setCharacteristic(Characteristic.FilterLifeLevel, value);
 
         this.log("updateFilterLifeLevel to " + value);
