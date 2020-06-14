@@ -10,7 +10,7 @@ module.exports = function (homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
 
-    homebridge.registerAccessory("homebridge-xiaomi-purifier-3", "MiAirPurifier3", AirPurifier);
+    homebridge.registerAccessory("homebridge-xiaomi-air-purifier-3", "MiAirPurifier3", AirPurifier);
 }
 
 function AirPurifier(log, config) {
@@ -155,29 +155,23 @@ AirPurifier.prototype.getServices = function () {
         .on('get', this.getFilterLifeLevel.bind(this));
 
     // LED
-     if (this.enableLED) {
-    //     this.lightService = new Service.Lightbulb(this.enableLEDName);
-    //     this.lightService
-    //         .getCharacteristic(Characteristic.On)
-    //         .on('get', this.getLED.bind(this))
-    //         .on('set', this.setLED.bind(this));
-        this.service.getCharacteristic(Characteristic.On)
-        .on('get', this.getLED.bind(this))
-        .on('set', this.setLED.bind(this))
+    if (this.enableLED) {
+        this.lightService = new Service.Lightbulb(this.enableLEDName);
+        this.lightService
+            .getCharacteristic(Characteristic.On)
+            .on('get', this.getLED.bind(this))
+            .on('set', this.setLED.bind(this));
+        this.services.push(this.lightService);
     }
 
     // Buzzer
     if (this.enableBuzzer) {
-        // this.buzzerService = new Service.Switch(this.enableBuzzerName);
-        // this.buzzerService
-        //     .getCharacteristic(Characteristic.On)
-        //     .on('get', this.getBuzzer.bind(this))
-        //     .on('set', this.setBuzzer.bind(this));
-        // this.services.push(this.buzzerService);
-
-        this.service.getCharacteristic(Characteristic.On)
-        .on('get', this.getBuzzer.bind(this))
-        .on('set', this.setBuzzer.bind(this))
+        this.buzzerService = new Service.Switch(this.enableBuzzerName);
+        this.buzzerService
+            .getCharacteristic(Characteristic.On)
+            .on('get', this.getBuzzer.bind(this))
+            .on('set', this.setBuzzer.bind(this));
+        this.services.push(this.buzzerService);
     }
 
     // Air Quality Sensor
