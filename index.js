@@ -10,7 +10,7 @@ module.exports = function (homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
 
-    homebridge.registerAccessory("homebridge-xiaomi-air-purifier-3", "MiAirPurifier3", AirPurifier);
+    homebridge.registerAccessory("homebridge-xiaomi-purifier-3", "MiAirPurifier3", AirPurifier);
 }
 
 function AirPurifier(log, config) {
