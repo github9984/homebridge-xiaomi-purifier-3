@@ -1,7 +1,6 @@
 'use strict';
-// https://github.com/aschzero/homebridge-airmega/blob/master/lib/services/PurifierService.ts
-// http://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-ma4:1
-// https://github.com/Colorado4Wheeler/HomeKit-Bridge/wiki/HomeKit-Model-Reference
+ 
+// http://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-mb3:1
 
 var Service, Characteristic;
 var MIoTDevice = require('./MIoTAirPurifier');
