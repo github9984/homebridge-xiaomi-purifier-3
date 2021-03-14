@@ -56,6 +56,8 @@ class MIoTAirPurifier extends MIoTDevice {
         var favorite_level = this.get('favorite_level');
         const rotationSpeed = (favorite_level / 14) * 100;
 
+        if (rotationSpeed > 100) return 100;
+        
         return Math.round(rotationSpeed);        
     }
 
